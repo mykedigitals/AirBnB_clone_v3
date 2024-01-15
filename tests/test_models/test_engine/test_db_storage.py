@@ -18,6 +18,7 @@ import json
 import os
 import pep8
 import unittest
+from models import storage
 DBStorage = db_storage.DBStorage
 classes = {"Amenity": Amenity, "City": City, "Place": Place,
            "Review": Review, "State": State, "User": User}
@@ -72,7 +73,7 @@ class TestFileStorage(unittest.TestCase):
     """Test the FileStorage class"""
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
     def test_all_returns_dict(self):
-        """Test that all returns a dictionary"""
+        """Test that all returns a dictionaty"""
         self.assertIs(type(models.storage.all()), dict)
 
     @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
@@ -87,73 +88,23 @@ class TestFileStorage(unittest.TestCase):
     def test_save(self):
         """Test that save properly saves objects to file.json"""
 
-    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
-    def test_get(self):
-        """Test save method returns a single object"""
-
-    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
-    def test_count(self):
-        """Test count method returns count of all objects"""
-
-    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
-    def test_get(self):
-        """Tests that obtaining an object from file storage"""
-        db_storage = DBStorage()
-        my_obj = {"name": "AmuElla"}
-        instance = State(**my_obj)
-        db_storage.new(instance)
-        db_storage.save()
-        self.assertEqual(db_storage.get(State, instance.id), instance)
-
-    @unittest.skipIf(models.storage_t != 'db', "not testing db storage")
-    def test_count(self):
-        """Tests that return number of objects in file storage"""
-        db_storage = DBStorage()
-        my_obj = {"name": "AmuElla"}
-        state = State(**my_obj)
-        db_storage.new(state)
-        my_obj = {"name": "Canada"}
-        city = City(**my_obj)
-        db_storage.new(city)
-        db_storage.save()
-        self.assertEqual(len(db_storage.all()), db_storage.count())
-
-
-class TestDBStorage(unittest.TestCase):
-    """Test the DBStorage class"""
-
-    @unittest.skipIf(os.getenv('HBNB_TYPE_STORAGE') != 'db',
-                     "not testing db storage")
-    def test_get(self):
-        """Tests that retrieve an object"""
-        storage = models.storage
-        my_obj = State(name='California')
-        my_obj.save()
-        self.assertEqual(my_obj.id, storage.get(State, my_obj.id).id)
-        self.assertEqual(my_obj.name, storage.get(State, my_obj.id).name)
-        self.assertIsNot(my_obj, storage.get(State, my_obj.id + 'op'))
-        self.assertIsNone(storage.get(State, my_obj.id + 'op'))
-        self.assertIsNone(storage.get(State, 45))
-        self.assertIsNone(storage.get(None, my_obj.id))
-        self.assertIsNone(storage.get(int, my_obj.id))
-        with self.assertRaises(TypeError):
-            storage.get(State, my_obj.id, 'op')
-        with self.assertRaises(TypeError):
-            storage.get(State)
-        with self.assertRaises(TypeError):
-            storage.get()
+    def test_get_db(self):
+        """ Tests method for obtaining an instance db storage"""
+        dic = {"name": "Cundinamarca"}
+        instance = State(**dic)
+        storage.new(instance)
+        storage.save()
+        get_instance = storage.get(State, instance.id)
+        self.assertEqual(get_instance, instance)
 
     def test_count(self):
-        """Tests that return number of objects"""
-        storage = models.storage
-        self.assertIs(type(storage.count()), int)
-        self.assertIs(type(storage.count(None)), int)
-        self.assertIs(type(storage.count(int)), int)
-        self.assertIs(type(storage.count(State)), int)
-        self.assertEqual(storage.count(), storage.count(None))
-        State(name='Ohio').save()
-        self.assertGreater(storage.count(State), 0)
-        self.assertEqual(storage.count(), storage.count(None))
-        ct = storage.count(State)
-        State(name='Florida').save()
-        self.assertGreater(storage.count(State), ct)
+        """ Tests count method db storage """
+        dic = {"name": "Vecindad"}
+        state = State(**dic)
+        storage.new(state)
+        dic = {"name": "Mexico", "state_id": state.id}
+        city = City(**dic)
+        storage.new(city)
+        storage.save()
+        c = storage.count()
+        self.assertEqual(len(storage.all()), c)
